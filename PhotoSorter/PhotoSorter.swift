@@ -108,7 +108,7 @@ class PhotoSorter{
             let fileName = fileAsNSString.lastPathComponent
             let newOriginPath = documentsPath.appendingPathComponent(file)
             
-            if pathExtension == "png" || pathExtension == "jpeg" || pathExtension == "jpg"{
+            if pathExtension == "png" || pathExtension == "jpeg" || pathExtension == "jpg" || pathExtension == "tiff" || pathExtension == "gif"{
                 
                 do{
                     // gets the creation date of the file
