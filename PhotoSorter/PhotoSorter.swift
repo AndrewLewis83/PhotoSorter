@@ -77,46 +77,11 @@ class PhotoSorter{
     func photoCopy(){
         
         let fileManager = FileManager.default
-        // create directory to hold copied photos
         let homeDirURL = FileManager.default.homeDirectoryForCurrentUser
-        let dataPath = homeDirURL.appendingPathComponent("Pictures/Sorted Photos Folder")
+        var dataPath = homeDirURL.appendingPathComponent("Pictures/Sorted Photos Folder")
+        dataPath = URL(fileURLWithPath: dataPath.path)
         
-        if fileManager.fileExists(atPath: dataPath.path){
-            print("File already exists. Do you wish to overwrite it? Y or N")
-            var userChoice = consoleIO.getInput()
-            userChoice = userChoice.uppercased()
-            
-            if userChoice == "Y" {
-                // enter code to delete the existing folder.
-                do {
-                    try fileManager.trashItem(at: dataPath, resultingItemURL: nil)
-                    
-                }catch let error as NSError {
-                    print(error.localizedDescription)
-                }
-                
-                do {
-                    try FileManager.default.createDirectory(at: dataPath, withIntermediateDirectories: true)
-                    
-                } catch let error as NSError {
-                    print(error.localizedDescription);
-                }
-            }else if userChoice == "N"{
-                return
-            } else {
-                consoleIO.writeMessage("Please enter a valid choice")
-                return
-            }
-
-        } else {
-            
-            do {
-                try FileManager.default.createDirectory(at: dataPath, withIntermediateDirectories: true)
-                
-            } catch let error as NSError {
-                print(error.localizedDescription);
-            }
-        }
+        mainFolderCreation(dataPath: dataPath)
         
         // get the name of every file in the documents folder and place the url in theItems array
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
@@ -221,6 +186,49 @@ class PhotoSorter{
                 }catch{
                     print("unable to obtain creation date for \(file).")
                 }
+            }
+        }
+    }
+    
+    func mainFolderCreation(dataPath: URL){
+        
+        let fileManager = FileManager.default
+        // create directory to hold copied photos
+        
+        if fileManager.fileExists(atPath: dataPath.path){
+            print("File already exists. Do you wish to overwrite it? Y or N")
+            var userChoice = consoleIO.getInput()
+            userChoice = userChoice.uppercased()
+            
+            if userChoice == "Y" {
+                // enter code to delete the existing folder.
+                do {
+                    try fileManager.trashItem(at: dataPath, resultingItemURL: nil)
+                    
+                }catch let error as NSError {
+                    print(error.localizedDescription)
+                }
+                
+                do {
+                    try FileManager.default.createDirectory(at: dataPath, withIntermediateDirectories: true)
+                    
+                } catch let error as NSError {
+                    print(error.localizedDescription);
+                }
+            }else if userChoice == "N"{
+                return
+            } else {
+                consoleIO.writeMessage("Please enter a valid choice")
+                return
+            }
+            
+        } else {
+            
+            do {
+                try FileManager.default.createDirectory(at: dataPath, withIntermediateDirectories: true)
+                
+            } catch let error as NSError {
+                print(error.localizedDescription);
             }
         }
     }
