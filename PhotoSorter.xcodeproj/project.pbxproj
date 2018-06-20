@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		A14E822B20BDDDE000171778 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14E822A20BDDDE000171778 /* main.swift */; };
+		A14E823220BDF13900171778 /* ConsoleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14E823120BDF13900171778 /* ConsoleIO.swift */; };
+		A14E823420BDF5A000171778 /* PhotoSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14E823320BDF5A000171778 /* PhotoSorter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +27,8 @@
 /* Begin PBXFileReference section */
 		A14E822720BDDDE000171778 /* PhotoSorter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PhotoSorter; sourceTree = BUILT_PRODUCTS_DIR; };
 		A14E822A20BDDDE000171778 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		A14E823120BDF13900171778 /* ConsoleIO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleIO.swift; sourceTree = "<group>"; };
+		A14E823320BDF5A000171778 /* PhotoSorter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSorter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +62,8 @@
 			isa = PBXGroup;
 			children = (
 				A14E822A20BDDDE000171778 /* main.swift */,
+				A14E823120BDF13900171778 /* ConsoleIO.swift */,
+				A14E823320BDF5A000171778 /* PhotoSorter.swift */,
 			);
 			path = PhotoSorter;
 			sourceTree = "<group>";
@@ -120,6 +126,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A14E822B20BDDDE000171778 /* main.swift in Sources */,
+				A14E823220BDF13900171778 /* ConsoleIO.swift in Sources */,
+				A14E823420BDF5A000171778 /* PhotoSorter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

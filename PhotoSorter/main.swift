@@ -8,5 +8,13 @@
 
 import Foundation
 
-print("Hello, World!")
+let photoSorter = PhotoSorter()
+
+photoSorter.userInteraction()
+
+
+
+
+
+
 
