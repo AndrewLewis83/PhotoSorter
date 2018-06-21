@@ -47,7 +47,7 @@ class PhotoSorter{
 
             - This app will make a copy of every image it finds and place that copy in a folder according to its creation date.
 
-            - This app will optionally place a text file in every folder with a list of the original file locations of every image, including duplicates.
+            - This app will place a text file in every folder with a list of the original file locations of every image, including duplicates.
             
             """)
         
@@ -76,7 +76,7 @@ class PhotoSorter{
     // copies all photos into a new, organized folder.
     func photoCopy(){
         
-        let fileManager = FileManager.default
+        //let fileManager = FileManager.default
         let homeDirURL = FileManager.default.homeDirectoryForCurrentUser
         var dataPath = homeDirURL.appendingPathComponent("Pictures/Sorted Photos Folder")
         dataPath = URL(fileURLWithPath: dataPath.path)
@@ -84,10 +84,11 @@ class PhotoSorter{
         mainFolderCreation(dataPath: dataPath)
         
         // get the name of every file in the documents folder and place the url in theItems array
-        let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
-        let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
         var theItems = [String]()
-        let paths = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
+        let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
+        
+        var nsDirectory = FileManager.SearchPathDirectory.documentDirectory
+        var paths = NSSearchPathForDirectoriesInDomains(nsDirectory, nsUserDomainMask, true)
         
         if let dirPath = paths.first
         {
@@ -99,95 +100,25 @@ class PhotoSorter{
             }
         }
         
-        let documentsPath = homeDirURL.appendingPathComponent("Documents/")
+        var directoryPath = homeDirURL.appendingPathComponent("Documents/")
+        copyFile(theItems: theItems, directoryPath: directoryPath, dataPath: dataPath)
         
-        // copy photo and place it in the sorted photos folder
-        for file in theItems {
-            let fileAsNSString: NSString = file as NSString
-            let pathExtension = fileAsNSString.pathExtension
-            let fileName = fileAsNSString.lastPathComponent
-            let newOriginPath = documentsPath.appendingPathComponent(file)
-            
-            if pathExtension == "png" || pathExtension == "jpeg" || pathExtension == "jpg" || pathExtension == "tiff" || pathExtension == "gif"{
-                
-                do{
-                    // gets the creation date of the file
-                    let fileAttributes = try(fileManager.attributesOfItem(atPath: newOriginPath.path))
-                    let fileCreationDate = fileAttributes[FileAttributeKey.creationDate] as! Date
-                    
-                    // outputs the file creation date to a string
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.locale = NSLocale.current
-                    dateFormatter.dateStyle = DateFormatter.Style.medium
-                    dateFormatter.dateFormat = "MMMM, yyyy"
-                    let convertedDate = dateFormatter.string(from: fileCreationDate)
-                    let folderDataPath = dataPath.appendingPathComponent("\(convertedDate)")
-                    let fileURL = folderDataPath.appendingPathComponent("Info").appendingPathExtension("txt")
-                    
-                    if fileManager.fileExists(atPath: folderDataPath.path){
-                        do {
-                            let fileDataPath = folderDataPath.appendingPathComponent(URL(fileURLWithPath: file).lastPathComponent)
-                            try fileManager.copyItem(at: newOriginPath, to: fileDataPath)
-                            let fileHandle = try FileHandle(forWritingTo: fileURL)
-                            fileHandle.seekToEndOfFile()
-                            let writestring = "\(fileName) has a duplicate located at \(newOriginPath).\n\n"
-                            fileHandle.write(writestring.data(using: String.Encoding.utf8)!)
-
-                        }catch{
-                            
-                            let fileHandle = try FileHandle(forWritingTo: fileURL)
-                            fileHandle.seekToEndOfFile()
-                            let writestring = "\(fileName) has a duplicate located at \(newOriginPath).\n\n"
-                            fileHandle.write(writestring.data(using: String.Encoding.utf8)!)
-                        }
-                        
-                    }else{
-                        
-                        // create directory
-                        do {
-                            try FileManager.default.createDirectory(at: folderDataPath, withIntermediateDirectories: false)
-                            
-                        } catch let error as NSError {
-                            print(error.localizedDescription);
-                        }
-                        
-                        var writeString = ("INFO.TXT\n\n")
-                        //  prepare content and write to file
-                        do{
-                            try writeString.write(to: fileURL, atomically: true, encoding: String.Encoding.utf8)
-                        }catch let error as NSError{
-                            print("Failed to write to URL")
-                            print(error)
-                        }
-
-                        // copy image files into directory
-                        do {
-                            let fileDataPath = folderDataPath.appendingPathComponent(URL(fileURLWithPath: file).lastPathComponent)
-                            try fileManager.copyItem(at: newOriginPath, to: fileDataPath)
-                            
-                            let fileHandle = try FileHandle(forWritingTo: fileURL)
-                            fileHandle.seekToEndOfFile()
-                            let writestring = "\(fileName) has a duplicate located at \(newOriginPath).\n\n"
-                            fileHandle.write(writestring.data(using: String.Encoding.utf8)!)
-                        }
-                        catch let error as NSError {
-                            
-                            writeString = ("\(error)")
-                            //  prepare content and write to file
-                            do{
-                                try writeString.write(to: fileURL, atomically: true, encoding: String.Encoding.utf8)
-                            }catch let error as NSError{
-                                print("Failed to write to URL")
-                                print(error)
-                            }
-                        }
-                    }
-
-                }catch{
-                    print("unable to obtain creation date for \(file).")
-                }
+        nsDirectory = FileManager.SearchPathDirectory.desktopDirectory
+        paths = NSSearchPathForDirectoriesInDomains(nsDirectory, nsUserDomainMask, true)
+        
+        if let dirPath = paths.first
+        {
+            let imageURL = URL(fileURLWithPath: dirPath)
+            do {
+                theItems = try FileManager.default.subpathsOfDirectory(atPath: imageURL.path)
+            } catch let error as NSError {
+                print(error.localizedDescription)
             }
         }
+        
+        directoryPath = homeDirURL.appendingPathComponent("Desktop/")
+        copyFile(theItems: theItems, directoryPath: directoryPath, dataPath: dataPath)
+        
     }
     
     func mainFolderCreation(dataPath: URL){
@@ -231,5 +162,97 @@ class PhotoSorter{
                 print(error.localizedDescription);
             }
         }
+    }
+    
+    func copyFile(theItems: Array<String>, directoryPath: URL, dataPath: URL){
+        
+        // copy photo and place it in the sorted photos folder
+        for file in theItems {
+            let fileAsNSString: NSString = file as NSString
+            let pathExtension = fileAsNSString.pathExtension
+            let fileName = fileAsNSString.lastPathComponent
+            let newOriginPath = directoryPath.appendingPathComponent(file)
+            
+            if pathExtension == "png" || pathExtension == "jpeg" || pathExtension == "jpg" || pathExtension == "tiff" || pathExtension == "gif"{
+                
+                do{
+                    // gets the creation date of the file
+                    let fileAttributes = try(FileManager.default.attributesOfItem(atPath: newOriginPath.path))
+                    let fileCreationDate = fileAttributes[FileAttributeKey.creationDate] as! Date
+                    
+                    // outputs the file creation date to a string
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.locale = NSLocale.current
+                    dateFormatter.dateStyle = DateFormatter.Style.medium
+                    dateFormatter.dateFormat = "MMMM, yyyy"
+                    let convertedDate = dateFormatter.string(from: fileCreationDate)
+                    let folderDataPath = dataPath.appendingPathComponent("\(convertedDate)")
+                    let fileURL = folderDataPath.appendingPathComponent("Info").appendingPathExtension("txt")
+                    
+                    if FileManager.default.fileExists(atPath: folderDataPath.path){
+                        do {
+                            let fileDataPath = folderDataPath.appendingPathComponent(URL(fileURLWithPath: file).lastPathComponent)
+                            try FileManager.default.copyItem(at: newOriginPath, to: fileDataPath)
+                            let fileHandle = try FileHandle(forWritingTo: fileURL)
+                            fileHandle.seekToEndOfFile()
+                            let writestring = "\(fileName) has a duplicate located at \(newOriginPath).\n\n"
+                            fileHandle.write(writestring.data(using: String.Encoding.utf8)!)
+                            
+                        }catch{
+                            
+                            let fileHandle = try FileHandle(forWritingTo: fileURL)
+                            fileHandle.seekToEndOfFile()
+                            let writestring = "\(fileName) has a duplicate located at \(newOriginPath).\n\n"
+                            fileHandle.write(writestring.data(using: String.Encoding.utf8)!)
+                        }
+                        
+                    }else{
+                        
+                        // create directory
+                        do {
+                            try FileManager.default.createDirectory(at: folderDataPath, withIntermediateDirectories: false)
+                            
+                        } catch let error as NSError {
+                            print(error.localizedDescription);
+                        }
+                        
+                        var writeString = ("INFO.TXT\n\n")
+                        //  prepare content and write to file
+                        do{
+                            try writeString.write(to: fileURL, atomically: true, encoding: String.Encoding.utf8)
+                        }catch let error as NSError{
+                            print("Failed to write to URL")
+                            print(error)
+                        }
+                        
+                        // copy image files into directory
+                        do {
+                            let fileDataPath = folderDataPath.appendingPathComponent(URL(fileURLWithPath: file).lastPathComponent)
+                            try FileManager.default.copyItem(at: newOriginPath, to: fileDataPath)
+                            
+                            let fileHandle = try FileHandle(forWritingTo: fileURL)
+                            fileHandle.seekToEndOfFile()
+                            let writestring = "\(fileName) has a duplicate located at \(newOriginPath).\n\n"
+                            fileHandle.write(writestring.data(using: String.Encoding.utf8)!)
+                        }
+                        catch let error as NSError {
+                            
+                            writeString = ("\(error)")
+                            //  prepare content and write to file
+                            do{
+                                try writeString.write(to: fileURL, atomically: true, encoding: String.Encoding.utf8)
+                            }catch let error as NSError{
+                                print("Failed to write to URL")
+                                print(error)
+                            }
+                        }
+                    }
+                    
+                }catch{
+                    print("unable to obtain creation date for \(file).")
+                }
+            }
+        }
+        
     }
 }
