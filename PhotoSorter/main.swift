@@ -10,7 +10,7 @@ import Foundation
 
 let photoSorter = PhotoSorter()
 
-photoSorter.userInteraction()
+photoSorter.appStart()
 
 
 

@@ -18,7 +18,7 @@ class PhotoSorter{
         //2
         let argument = CommandLine.arguments[1]
         //3
-        let (option, value) = getOption(argument.substring(from:argument.index(argument.startIndex, offsetBy:1)))
+        let (option, value) = getOption(String(argument.suffix(from:argument.index(argument.startIndex, offsetBy:1))))
         
         consoleIO.writeMessage("Argument count: \(argCount) Option: \(option) value: \(value)")
     }
@@ -41,13 +41,13 @@ class PhotoSorter{
         return (OptionType(value: option), option)
     }
     
-    func userInteraction(){
+    func appStart(){
         consoleIO.writeMessage("""
             This photo sorting app was written by Andy Lewis in 2018 using Swift 4. It is free and meant for open use. WARNING: You are running this software at your own risk. Make sure to run a backup of your current system, and then disconnect the backup before running this app.
 
             - This app will make a copy of every image it finds and place that copy in a folder according to its creation date.
 
-            - This app will place a text file in every folder with a list of the original file locations of every image, including duplicates.
+            - This app will place a text file in every folder with a list of the original file locations of every image, including duplicates, by month.
             
             """)
         
@@ -76,12 +76,48 @@ class PhotoSorter{
     // copies all photos into a new, organized folder.
     func photoCopy(){
         
-        //let fileManager = FileManager.default
         let homeDirURL = FileManager.default.homeDirectoryForCurrentUser
         var dataPath = homeDirURL.appendingPathComponent("Pictures/Sorted Photos Folder")
         dataPath = URL(fileURLWithPath: dataPath.path)
-        
-        mainFolderCreation(dataPath: dataPath)
+    
+        // create directory to hold copied photos
+        if FileManager.default.fileExists(atPath: dataPath.path){
+            print("File already exists. Do you wish to overwrite it? Y or N")
+            var userChoice = consoleIO.getInput()
+            userChoice = userChoice.uppercased()
+            
+            if userChoice == "Y" {
+                // enter code to delete the existing folder.
+                do {
+                    try FileManager.default.trashItem(at: dataPath, resultingItemURL: nil)
+                    
+                }catch let error as NSError {
+                    print(error.localizedDescription)
+                }
+                
+                do {
+                    try FileManager.default.createDirectory(at: dataPath, withIntermediateDirectories: true)
+                    
+                } catch let error as NSError {
+                    print(error.localizedDescription);
+                }
+                
+            } else if userChoice == "N" {
+                return
+            } else {
+                consoleIO.writeMessage("Please enter a valid choice")
+                return
+            }
+            
+        } else {
+            
+            do {
+                try FileManager.default.createDirectory(at: dataPath, withIntermediateDirectories: true)
+                
+            } catch let error as NSError {
+                print(error.localizedDescription);
+            }
+        }
         
         // get the name of every file in the documents folder and place the url in theItems array
         var theItems = [String]()
@@ -119,49 +155,8 @@ class PhotoSorter{
         directoryPath = homeDirURL.appendingPathComponent("Desktop/")
         copyFile(theItems: theItems, directoryPath: directoryPath, dataPath: dataPath)
         
-    }
-    
-    func mainFolderCreation(dataPath: URL){
-        
-        let fileManager = FileManager.default
-        // create directory to hold copied photos
-        
-        if fileManager.fileExists(atPath: dataPath.path){
-            print("File already exists. Do you wish to overwrite it? Y or N")
-            var userChoice = consoleIO.getInput()
-            userChoice = userChoice.uppercased()
-            
-            if userChoice == "Y" {
-                // enter code to delete the existing folder.
-                do {
-                    try fileManager.trashItem(at: dataPath, resultingItemURL: nil)
-                    
-                }catch let error as NSError {
-                    print(error.localizedDescription)
-                }
-                
-                do {
-                    try FileManager.default.createDirectory(at: dataPath, withIntermediateDirectories: true)
-                    
-                } catch let error as NSError {
-                    print(error.localizedDescription);
-                }
-            }else if userChoice == "N"{
-                return
-            } else {
-                consoleIO.writeMessage("Please enter a valid choice")
-                return
-            }
-            
-        } else {
-            
-            do {
-                try FileManager.default.createDirectory(at: dataPath, withIntermediateDirectories: true)
-                
-            } catch let error as NSError {
-                print(error.localizedDescription);
-            }
-        }
+        consoleIO.printDelimiter()
+        print("\nProcess complete. Copied images are located in Pictures/Sorted Photos Folder")
     }
     
     func copyFile(theItems: Array<String>, directoryPath: URL, dataPath: URL){
@@ -216,11 +211,11 @@ class PhotoSorter{
                             print(error.localizedDescription);
                         }
                         
-                        var writeString = ("INFO.TXT\n\n")
+                        let writeString = ("INFO.TXT\n\n")
                         //  prepare content and write to file
                         do{
                             try writeString.write(to: fileURL, atomically: true, encoding: String.Encoding.utf8)
-                        }catch let error as NSError{
+                        } catch let error as NSError{
                             print("Failed to write to URL")
                             print(error)
                         }
@@ -234,17 +229,13 @@ class PhotoSorter{
                             fileHandle.seekToEndOfFile()
                             let writestring = "\(fileName) has a duplicate located at \(newOriginPath).\n\n"
                             fileHandle.write(writestring.data(using: String.Encoding.utf8)!)
-                        }
-                        catch let error as NSError {
                             
-                            writeString = ("\(error)")
-                            //  prepare content and write to file
-                            do{
-                                try writeString.write(to: fileURL, atomically: true, encoding: String.Encoding.utf8)
-                            }catch let error as NSError{
-                                print("Failed to write to URL")
-                                print(error)
-                            }
+                        } catch {
+                            
+                            let fileHandle = try FileHandle(forWritingTo: fileURL)
+                            fileHandle.seekToEndOfFile()
+                            let writestring = "\(fileName) has a duplicate located at \(newOriginPath).\n\n"
+                            fileHandle.write(writestring.data(using: String.Encoding.utf8)!)
                         }
                     }
                     
@@ -253,6 +244,5 @@ class PhotoSorter{
                 }
             }
         }
-        
     }
 }

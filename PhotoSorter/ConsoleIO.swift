@@ -31,11 +31,6 @@ class ConsoleIO{
             print("**********************************")
     }
     
-    // this function will print possible commands to use with the application, if the user enters something in error.
-    func printUsage(){
-        writeMessage("This will contain information on how to use the program")
-    }
-    
     func getInput() -> String {
         // grab a handle to stdin
         let keyboard = FileHandle.standardInput
