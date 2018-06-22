@@ -11,10 +11,3 @@ import Foundation
 let photoSorter = PhotoSorter()
 
 photoSorter.appStart()
-
-
-
-
-
-
-
