@@ -63,6 +63,7 @@ class PhotoSorter{
             switch option {
                 case .copyPictures:
                     consoleIO.printDelimiter()
+                    print("Working. This may take a few moments...")
                     photoCopy()
             case .exit:
                     shouldQuit = true
